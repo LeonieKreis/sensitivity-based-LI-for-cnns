@@ -157,10 +157,46 @@ def init_ext_net(model_baseline, model_ext, position, BN=False):
     return model_ext
 
 
-def select_new_model(sensitivities, model_baseline, BN=False): # TODO
-    #Unterscheidung BN/not BN
+def select_new_model(sensitivities, model_baseline, mode='abs max', BN=False): # TODO
+    # Unterscheidung BN/not BN
+    # We only look at the filter parameters, 
+    # this means that we do not consider the biases and in the BN case, 
+    # also the trainable parameters of BN are ignored
 
-    position = 0 # TODO
+    # select filter sensitivities
+    # for BN this is the third parameter of the 4 of each layer, so 2,6,10
+    # wo BN this is the first parameter of the 2 of each layer, so 0,2,4
+    freezed_norms_only_filters=[]
+
+    if BN:
+        for k, sens in enumerate(sensitivities):
+            if k%4 == 2:
+                freezed_norms_only_filters.append(sens)
+
+    if not BN:
+        for k, sens in enumerate(sensitivities):
+            if k%2 == 0:
+                freezed_norms_only_filters.append(sens)
+        
+
+
+
+    # mode absmax, absmin, pos0
+    if mode =='absmax':
+        max_index = max(range(len(freezed_norms_only_filters)),
+                        key=lambda l: freezed_norms_only_filters[l])
+        position = max_index
+
+    if mode =='abs min':
+        min_index = min(range(len(freezed_norms_only_filters)),
+                        key=lambda l: freezed_norms_only_filters[l])
+        position = min_index
+        
+
+    if mode=='pos 0':
+        position=0
+
+    
     model = extend_VGG(position, BN)
     model = init_ext_net(model_baseline, model, position, BN)
     return model
@@ -172,7 +208,7 @@ def select_new_model(sensitivities, model_baseline, BN=False): # TODO
 def tmp_net(model_baseline, BN=False):
     model, freezed = build_vgg_fullyext(BN)
     model = init_fullyext_net(model_baseline, model, freezed, BN)
-    return model
+    return model, freezed
 
 
 
