@@ -31,7 +31,7 @@ def training_with_one_LI(epochs, traindataloader, testdataloader,BN=False, optim
             
     if lrschedule_type == 'MultiStepLR':
         if isinstance(lrscheduler_args['step_size'][0],list):
-            step_size = lrscheduler_args['step_size'][k]
+            step_size = lrscheduler_args['step_size'][0]
         else:
             step_size = lrscheduler_args['step_size']
         gamma = lrscheduler_args['gamma']
@@ -40,20 +40,23 @@ def training_with_one_LI(epochs, traindataloader, testdataloader,BN=False, optim
         
     ############## TRAIN BASELINE ######################################
         
-    losses1, test_accs1, times1 = train(model_baseline,traindataloader,
+    losses1, test_accs1, times1, grad_norms1 = train(model_baseline,traindataloader,
                                         testdataloader,optimizer,epochs[0],
                                         lrscheduler, stopping_criterion=stopping_criterion, 
                                         save_grad_norms=save_grad_norms)
 
     ############# BUILD TMP NET ########################################
+    print(f'Starting layer selection...')
     toc = time.time()
     model_fullyext, freezed = tmp_net(model_baseline, BN)
 
     ######## COMPUTE SENSITIVITIES #####################################
+    print('calculate sensitivities...')
     sensitivities = calculate_shadow_prices_mb(traindataloader, 
                                                model_fullyext, freezed)
-
+    
     ####### SELECT NEW MODEL ###########################################
+    print('build new model...')
     model_ext = select_new_model(sensitivities, model_baseline,mode,BN)
 
     ##### DECREASE LR ##################################################
@@ -90,7 +93,7 @@ def training_with_one_LI(epochs, traindataloader, testdataloader,BN=False, optim
                 optimizer, milestones=step_size, gamma=gamma)
 
 
-    losses2, test_accs2, times2 = train(model_ext,traindataloader,
+    losses2, test_accs2, times2, grad_norms2 = train(model_ext,traindataloader,
                                         testdataloader,optimizer,epochs[1],
                                         lrscheduler, stopping_criterion=stopping_criterion,
                                         save_grad_norms=save_grad_norms)
@@ -100,5 +103,6 @@ def training_with_one_LI(epochs, traindataloader, testdataloader,BN=False, optim
     losses = losses1+losses2
     accs = test_accs1 + test_accs2
     times = times1 + times2
+    grad_norms= grad_norms1+grad_norms2
 
     return losses, accs, times, grad_norms

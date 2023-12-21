@@ -318,16 +318,21 @@ class VGG_BN_toy(nn.Module):
         return x
 
 
+def init_vgg(model_baseline):
 
+    return model_baseline
 
 
 
 
 def build_vgg_baseline(BN=False):
     if BN:
-        return VGG_BN()
+        model= VGG_BN()
+        model = init_vgg(model)
     else: 
-        return VGG()
+        model = VGG()
+        model = init_vgg(model)
+    return model
     
 def build_vgg_fullyext(BN=False):
     if BN:
@@ -426,9 +431,9 @@ def extend_VGG(position, BN=False):
     return model
 
 
-model = extend_VGG(2,BN=True)
-print(model)
-for i,p in enumerate(model.parameters()):
-    print(i)
-    print(p.shape)
+#model = extend_VGG(2,BN=True)
+#print(model)
+#for i,p in enumerate(model.parameters()):
+#    print(i)
+#    print(p.shape)
 

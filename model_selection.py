@@ -93,14 +93,15 @@ def init_fullyext_net(model_baseline, model_fullyextended,freezed, BN=False):
             ] # 64x64x3x3, 64->0, 128x128x3x3, 128->0, 256x256x3x3, 256->0
 
 
-
+        i=0
         old_param_iterator = model_baseline.parameters()
         for p_new in model_fullyextended.parameters():
             if not _is_freezed(p_new, freezed):
                 p = next(old_param_iterator)
                 p_new.copy_(p)
+                
             else:
-                p_new.copy_[new_weights_inits[i]]
+                p_new.copy_(new_weights_inits[i])
                 i+=1
 
 
@@ -144,7 +145,7 @@ def init_ext_net(model_baseline, model_ext, position, BN=False):
         new_weights_inits= [torch.ones([channels]), torch.zeros([channels]), t,torch.zeros([channels])]
     if not BN:
         new_weights_inits = [t,torch.zeros([channels])]
-
+    i=0
     with torch.no_grad():
         old_param_iterator = model_baseline.parameters()
         for p_new in model_ext.parameters():
@@ -152,7 +153,7 @@ def init_ext_net(model_baseline, model_ext, position, BN=False):
                 p = next(old_param_iterator)
                 p_new.copy_(p)
             else:
-                p_new.copy_[new_weights_inits[i]]
+                p_new.copy_(new_weights_inits[i])
                 i+=1
     return model_ext
 
@@ -182,8 +183,10 @@ def select_new_model(sensitivities, model_baseline, mode='abs max', BN=False): #
 
 
     # mode absmax, absmin, pos0
-    if mode =='absmax':
-        max_index = max(range(len(freezed_norms_only_filters)),
+    if mode =='abs max':
+        indices = list(range(len(freezed_norms_only_filters)))
+        dummy=0
+        max_index = max(indices,
                         key=lambda l: freezed_norms_only_filters[l])
         position = max_index
 
@@ -246,5 +249,5 @@ def calculate_shadow_prices_mb(traindataloader, model, freezed):
     frozen = [scale*x for x in frozen]
     #not_frozen = [scale*x for x in not_frozen]
 
-    sensitivities = []
+    sensitivities = frozen
     return sensitivities

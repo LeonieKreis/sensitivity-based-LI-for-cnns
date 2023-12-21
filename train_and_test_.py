@@ -24,7 +24,7 @@ def train(model, traindataloader,testdataloader, optimizer, no_epochs, scheduler
             inputs, targets = inputs.to(device), targets.to(device)
             optimizer.zero_grad()
             outputs = model(inputs)
-            loss = torch.nn.CrossEntropyLoss(outputs, targets)
+            loss = torch.nn.CrossEntropyLoss()(outputs, targets)
             loss.backward()
             if save_grad_norms:
                 norm = 0
@@ -43,6 +43,7 @@ def train(model, traindataloader,testdataloader, optimizer, no_epochs, scheduler
             _, predicted = outputs.max(1)
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
+        train_loss=train_loss/(batch_idx+1)
         losses.append(train_loss)
         acc = 100.*correct/total
         print(f'training accuracy: {acc} and loss {train_loss}') 
@@ -67,7 +68,7 @@ def test(model,testdataloader):
         for batch_idx, (inputs, targets) in enumerate(testdataloader):
             inputs, targets = inputs.to(device), targets.to(device)
             outputs = model(inputs)
-            loss = torch.nn.CrossEntropyLoss(outputs, targets)
+            loss = torch.nn.CrossEntropyLoss()(outputs, targets)
 
             test_loss += loss.item()
             _, predicted = outputs.max(1)

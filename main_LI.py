@@ -31,7 +31,7 @@ testloader = torch.utils.data.DataLoader(
 
 
 #################################################################################
-epochs = [20,20]
+epochs = [2,2]
 BN=False
 lr_init = 0.05
 
