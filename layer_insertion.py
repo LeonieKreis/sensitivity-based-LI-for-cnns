@@ -5,7 +5,7 @@ from nets import build_vgg_baseline, build_vgg_fullyext, extend_VGG
 from model_selection import tmp_net, calculate_shadow_prices_mb, select_new_model
 from train_and_test_ import train, test
 
-def training_with_one_LI(epochs, traindataloader, testdataloader,BN=False, optimizer_type='SGD', lr_init=0.1, mode='abs max', stopping_criterion=None,lrschedule_type='StepLR', lrscheduler_args=None,decrease_lr_after_li=1.,save_grad_norms=False):
+def training_with_one_LI(epochs, traindataloader, testdataloader,BN=False, optimizer_type='SGD', lr_init=0.1, mode='abs max', stopping_criterion=None,lrschedule_type='StepLR', lrscheduler_args=None,decrease_lr_after_li=1.,save_grad_norms=False, init=None):
     losses = []
     accs = []
     times = []
@@ -13,6 +13,8 @@ def training_with_one_LI(epochs, traindataloader, testdataloader,BN=False, optim
 
     model_baseline = build_vgg_baseline(BN)
     print(f'Starting training on baseline model...')
+    if init is not None:
+        torch.nn.utils.vector_to_parameters(init, model_baseline.parameters())
 
     if optimizer_type == 'SGD':
         optimizer = torch.optim.SGD(model_baseline.parameters(), lr_init, momentum=0.9, weight_decay=5e-4)
